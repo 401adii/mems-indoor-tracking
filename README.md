@@ -19,7 +19,7 @@ The main tasks of the thesis include:
 * Software, Python, PyQT
 
 ## Directories descriptions
-* `wireles_protocols` - ESP-IDF project that allows for testing basic wireless communication protocols such as BLE, Wi-Fi and ESP-NOW. [WIP]
+[...]
 
 ## License
 This project is proprietary and currently not licensed for open-source use. All rights reserved.
