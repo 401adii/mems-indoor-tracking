@@ -19,7 +19,7 @@ The main tasks of the thesis include:
 * Software, Python, PyQT
 
 ## Directories descriptions
-[...]
+* `cmd-dispatcher` - Command parser and dispatcher supporting multiple ports.
 
 ## License
 This project is proprietary and currently not licensed for open-source use. All rights reserved.
