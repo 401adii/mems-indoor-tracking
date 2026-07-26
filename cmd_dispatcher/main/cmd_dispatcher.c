@@ -3,12 +3,26 @@
 
 static cmd_command_t g_cmd_table[CMD_COMMAND_NUM] = {0};
 static uint16_t g_cmd_num = 0;
+static cmd_args_t g_cmd_args = {0};
 
 void cmd_register_command(TaskFunction_t task, uint8_t *cmd_name)
 {
+    if(task == NULL || cmd_name == NULL)
+    {
+        return;
+    }
+
     if(g_cmd_num >= CMD_COMMAND_NUM - 1)
     {
         return;
+    }
+
+    for (uint16_t i = 0; i < g_cmd_num; i++)
+    {
+        if(strcmp((const char *)cmd_name,(const char *) g_cmd_table[i].cmd_name) == 0)
+        {
+            return;
+        }
     }
 
     g_cmd_table[g_cmd_num].task = task;
@@ -78,18 +92,35 @@ void cmd_process_port(cmd_port_context_t *ctx)
 void cmd_dispatch_command(uint8_t* cmd_string)
 {
     uint8_t* cmd_name = (uint8_t *)strtok((char *)cmd_string, " ");
-    uint8_t* args = (uint8_t *)strtok(NULL, "");
 
     if(cmd_name == NULL)
     {
         return;
     }
 
+    memset(&g_cmd_args, 0, sizeof(cmd_args_t));
+
+    char* token = strtok(NULL, " ");
+    while(token != NULL && g_cmd_args.argc < CMD_MAX_ARGS)
+    {
+        strncpy(g_cmd_args.argv[g_cmd_args.argc], token, CMD_ARG_LEN - 1);
+        g_cmd_args.argv[g_cmd_args.argc][CMD_ARG_LEN - 1] = '\0';
+        g_cmd_args.argc++;
+        token = strtok(NULL, " ");
+    }
+
     for(uint16_t i = 0; i < CMD_COMMAND_NUM; i++)
     {
         if(strcmp((const char*)cmd_name, (const char*)g_cmd_table[i].cmd_name) == 0)
         {
-            xTaskCreatePinnedToCore(g_cmd_table[i].task, (const char *)g_cmd_table[i].cmd_name, CMD_TASK_STACK_DEPTH, NULL, CMD_TASK_PRIORITY, NULL, 0);
+            xTaskCreatePinnedToCore(
+                g_cmd_table[i].task,
+                (const char *)g_cmd_table[i].cmd_name, 
+                CMD_TASK_STACK_DEPTH, 
+                (void*) &g_cmd_args, 
+                CMD_TASK_PRIORITY, 
+                NULL,
+                0);
         }
     }
 }

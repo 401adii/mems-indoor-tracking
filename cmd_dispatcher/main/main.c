@@ -10,15 +10,27 @@
 #define BUFF_SIZE 1024
 #define QUEUE_SIZE 10
 
+#define GPIO_LED1 2
+#define GPIO_LED2 23
+
 QueueHandle_t queue;
 
 cmd_ring_buffer_t rb = {0};
 
 void led(void *param)
 {
-    gpio_set_level(2, 1);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    gpio_set_level(2, 0);
+    cmd_args_t *args = (cmd_args_t *)param;
+
+    if(args != NULL && args->argc >= 2)
+    {
+        uint32_t pin = atoi(args->argv[0]);
+        uint32_t delay = atoi(args->argv[1]);
+
+        gpio_set_level(pin, 1);
+        vTaskDelay(pdMS_TO_TICKS(delay));
+        gpio_set_level(pin, 0);
+    }
+    
     vTaskDelete(NULL);
 }
 
@@ -59,7 +71,7 @@ void uart_rx(void* param)
 
 void app_main()
 {   gpio_config_t gpio_conf = {
-    .pin_bit_mask = (1 << 2),
+    .pin_bit_mask = (1 << GPIO_LED1) | (1 << GPIO_LED2),
     .intr_type = GPIO_INTR_DISABLE,
     .mode = GPIO_MODE_OUTPUT,
     .pull_down_en = GPIO_PULLDOWN_DISABLE,

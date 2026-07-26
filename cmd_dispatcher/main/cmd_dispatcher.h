@@ -8,6 +8,9 @@
 #define CMD_BUFFER_SIZE 128
 #define CMD_COMMAND_NUM 128
 
+#define CMD_MAX_ARGS 6
+#define CMD_ARG_LEN 16
+
 #define CMD_TASK_STACK_DEPTH 4096
 #define CMD_TASK_PRIORITY 2
 
@@ -30,6 +33,12 @@ typedef struct
     TaskFunction_t task;
     uint8_t cmd_name[CMD_BUFFER_SIZE];
 } cmd_command_t;
+
+typedef struct
+{
+    int argc;
+    char argv[CMD_MAX_ARGS][CMD_ARG_LEN];
+} cmd_args_t;
 
 void cmd_register_command(TaskFunction_t task, uint8_t* cmd_name);
 void cmd_buffer_push_byte(cmd_ring_buffer_t* rb, uint8_t data);
