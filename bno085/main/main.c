@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "bno085.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/i2c_master.h"
@@ -10,62 +9,8 @@
 #define BNO085_RESET_PIN GPIO_NUM_23
 #define BNO085_HINT_PIN GPIO_NUM_19
 
-static bno085_t bno085 = {0};
 static i2c_master_bus_handle_t bus_handle;
 static i2c_master_dev_handle_t dev_handle;
-
-static void delay(uint32_t delay_ms)
-{
-    vTaskDelay(pdMS_TO_TICKS(delay_ms));
-}
-
-static void reset()
-{
-    gpio_set_level(BNO085_RESET_PIN, 0);
-    vTaskDelay(pdMS_TO_TICKS(10));
-    gpio_set_level(BNO085_RESET_PIN, 1);
-}
-
-static void transmit(uint8_t* data, uint16_t len)
-{
-    i2c_master_transmit(dev_handle, data, len, 1000);
-}
-
-static void receive(uint8_t *data, uint16_t len)
-{
-    i2c_master_receive(dev_handle, data, len, 1000);
-}
-
-static void bno085_read_packet(uint8_t *rx_buffer, size_t max_len)
-{
-    uint8_t header[4];
-
-    bno085.receive(header, 4);
-    uint16_t total_len = ((header[1] << 8) | header[0]) & 0x7FFF;
-
-    if(total_len < 4)
-    {
-        return;
-    }
-
-    for(int i = 0; i < 4; i++)
-    {
-        rx_buffer[i] = header[i];
-    }
-
-    if(total_len == 4)
-    {
-        return;
-    }
-
-    size_t payload_len = total_len - 4;
-    if(total_len > max_len)
-    {
-        payload_len = max_len - 4;
-    }
-
-    bno085.receive(&rx_buffer[4], payload_len);
-}
 
 void app_main(void)
 {   
@@ -99,65 +44,127 @@ void app_main(void)
     gpio_conf.pull_up_en = GPIO_PULLUP_ENABLE;
     gpio_config(&gpio_conf);
 
-    bno085.delay = delay;
-    bno085.reset = reset;
-    bno085.transmit = transmit;
-    bno085.receive = receive;
+    gpio_set_level(BNO085_RESET_PIN, 1);
+    vTaskDelay(pdMS_TO_TICKS(10));
+    gpio_set_level(BNO085_RESET_PIN, 0);
+    vTaskDelay(pdMS_TO_TICKS(10));
+    gpio_set_level(BNO085_RESET_PIN, 1);
 
-    bno085.reset();
+    uint8_t hint_level = (uint8_t)gpio_get_level(BNO085_HINT_PIN);
+    uint8_t buffer[1024] = {0};
 
-    while(gpio_get_level(BNO085_HINT_PIN) != 0)
+    while((uint8_t)gpio_get_level(BNO085_HINT_PIN) == hint_level)
     {
         vTaskDelay(pdMS_TO_TICKS(10));
     }
-    uint8_t tx_buffer[6] = {
-        0x06, 0x00,
-        0x02,      
-        0x00,      
-        0xF9,      
-        0x00       
-    };
+    
+    ESP_LOGI("MAIN", "HINT READY!");
+    
+    i2c_master_receive(dev_handle, buffer, 4, pdMS_TO_TICKS(1000));
+    ESP_LOGI("MAIN", "Byte0: %d | Byte1: %d | Byte2: %d | Byte3: %d", buffer[0], buffer[1], buffer[2], buffer[3]);
+    
+    uint16_t size = (((uint16_t)buffer[1] << 8) | buffer[0]) & 0x7FFF;
+    ESP_LOGI("MAIN", "Size: %d", size);
+    memset((void*)buffer, 0, 1024);
+    
+    i2c_master_receive(dev_handle, buffer, size, pdMS_TO_TICKS(1000));
+    memset((void*)buffer, 0, 1024);
 
-    ESP_LOGI("MAIN", "Sending Product ID Request (0xF9)...");
-    bno085.transmit(tx_buffer, sizeof(tx_buffer));
-
-    while(gpio_get_level(BNO085_HINT_PIN) != 0)
+    hint_level = gpio_get_level(BNO085_HINT_PIN);
+    while((uint8_t)gpio_get_level(BNO085_HINT_PIN) == hint_level)
     {
         vTaskDelay(pdMS_TO_TICKS(10));
     }
-    ESP_LOGI("MAIN", "HINT PIN LOW - Response Ready!");
 
-    uint8_t rx_buffer[512] = {0}; 
-    bno085_read_packet(rx_buffer, sizeof(rx_buffer));
-
-    uint16_t resp_len  = ((rx_buffer[1] << 8) | rx_buffer[0]) & 0x7FFF;
-    uint8_t  channel   = rx_buffer[2];
-    uint8_t  report_id = rx_buffer[4];
-
-    if (channel == 2 && report_id == 0xF8)
+    i2c_master_receive(dev_handle, buffer, 4, pdMS_TO_TICKS(1000));
+    size = (((uint16_t)buffer[1] << 8) | buffer[0]) & 0x7FFF;
+    ESP_LOGI("MAIN", "Byte0: %d | Byte1: %d | Byte2: %d | Byte3: %d", buffer[0], buffer[1], buffer[2], buffer[3]);
+    memset((void*)buffer, 0, 1024);
+    i2c_master_receive(dev_handle, buffer, size, pdMS_TO_TICKS(1000));
+    for(uint16_t byte = 0; byte < size; byte++)
     {
-        uint8_t reset_cause = rx_buffer[5];
-        uint8_t sw_major    = rx_buffer[6];
-        uint8_t sw_minor    = rx_buffer[7];
-        
-        /* Part number and build number are 32-bit little-endian integers */
-        uint32_t part_num  = (rx_buffer[11] << 24) | (rx_buffer[10] << 16) | (rx_buffer[9] << 8)  | rx_buffer[8];
-        uint32_t build_num = (rx_buffer[15] << 24) | (rx_buffer[14] << 16) | (rx_buffer[13] << 8) | rx_buffer[12];
-        uint16_t sw_patch  = (rx_buffer[17] << 8)  | rx_buffer[16];
-
-        ESP_LOGI("MAIN", "=== BNO085 Two-Way Comms Verified! ===");
-        ESP_LOGI("MAIN", "Part Number: %lu", part_num);
-        ESP_LOGI("MAIN", "Firmware:    v%d.%d.%d (Build %lu)", sw_major, sw_minor, sw_patch, build_num);
-        ESP_LOGI("MAIN", "Reset Cause: 0x%02X", reset_cause);
+        ESP_LOGI("MAIN", "Byte%d: %d", byte, buffer[byte]);
     }
-    else
+    memset((void*)buffer, 0, 1024);
+
+    i2c_master_receive(dev_handle, buffer, 4, pdMS_TO_TICKS(1000));
+    size = (((uint16_t)buffer[1] << 8) | buffer[0]) & 0x7FFF;
+    ESP_LOGI("MAIN", "Byte0: %d | Byte1: %d | Byte2: %d | Byte3: %d", buffer[0], buffer[1], buffer[2], buffer[3]);
+    memset((void*)buffer, 0, 1024);
+    i2c_master_receive(dev_handle, buffer, size, pdMS_TO_TICKS(1000));
+    for(uint16_t byte = 0; byte < size; byte++)
     {
-        ESP_LOGE("MAIN", "Unexpected packet! Channel: %d | Report ID: 0x%02X", channel, report_id);
-        ESP_LOG_BUFFER_HEX("MAIN", rx_buffer, resp_len);
+        ESP_LOGI("MAIN", "Byte%d: %d", byte, buffer[byte]);
     }
+    memset((void*)buffer, 0, 1024);
+    
+    buffer[0] = 21;
+    buffer[1] = 0;
+    buffer[2] = 2;
+    buffer[3] = 0;
+    buffer[4] = 253;
+    buffer[5] = 6;
+    buffer[6] = 0;
+    buffer[7] = 0;
+    buffer[8] = 0;
+    buffer[9] = 32;
+    buffer[10] = 78;
+    buffer[11] = 0;
+    buffer[12] = 0;
+    buffer[13] = 0;
+    buffer[14] = 0;
+    buffer[15] = 0;
+    buffer[16] = 0;
+    buffer[17] = 0;
+    buffer[18] = 0;
+    buffer[19] = 0;
+    buffer[20] = 0;
 
+    ESP_LOGI("MAIN", "TRANSMITING DATA");
+    i2c_master_transmit(dev_handle, buffer, 21, pdMS_TO_TICKS(1000));
+
+    hint_level = (uint8_t)gpio_get_level(BNO085_HINT_PIN);
+    while((uint8_t)gpio_get_level(BNO085_HINT_PIN) == hint_level)
+    {
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+    ESP_LOGI("MAIN", "ACK READY");
+    i2c_master_receive(dev_handle, buffer, 4, pdMS_TO_TICKS(1000));
+    ESP_LOGI("MAIN", "Byte0: %d | Byte1: %d | Byte2: %d | Byte3: %d", buffer[0], buffer[1], buffer[2], buffer[3]);
+
+    size = (((uint16_t)buffer[1] << 8) | buffer[0]) & 0x7FFF;
+    ESP_LOGI("MAIN", "ACK Frame Size: %d", size);
+    for(uint16_t byte = 0; byte < size; byte++)
+    {
+        ESP_LOGI("MAIN", "Byte%d: %d", byte, buffer[byte]);
+    }
+    memset((void*)buffer, 0 , 1024);
+    
+    i2c_master_receive(dev_handle, buffer, size, pdMS_TO_TICKS(1000));
+    
+    memset((void*)buffer, 0, 1024);
+    hint_level = (uint8_t)gpio_get_level(BNO085_HINT_PIN);
+    ESP_LOGI("MAIN", "HINT LEVEL: %d", hint_level);
     while(1)
     {
-        vTaskDelay(pdMS_TO_TICKS(500));
+        while((uint8_t)gpio_get_level(BNO085_HINT_PIN) == hint_level)
+        {
+            vTaskDelay(pdMS_TO_TICKS(10));
+        }
+        
+        ESP_LOGI("MAIN", "DATA READY");
+        i2c_master_receive(dev_handle, buffer, 4, pdMS_TO_TICKS(1000));
+        ESP_LOGI("MAIN", "Byte0: %d | Byte1: %d | Byte2: %d | Byte3: %d", buffer[0], buffer[1], buffer[2], buffer[3]);
+
+        size = (((uint16_t)buffer[1] << 8) | buffer[0]) & 0x7FFF;
+        ESP_LOGI("MAIN", "Data Frame Size: %d", size);
+        memset((void*)buffer, 0 , 1024);
+        
+        i2c_master_receive(dev_handle, buffer, size, pdMS_TO_TICKS(1000));
+        for(uint16_t byte = 0; byte < size; byte++)
+        {
+            ESP_LOGI("MAIN", "Byte%d: %d", byte, buffer[byte]);
+        }
+        memset((void*)buffer, 0, 1024);
     }
 }
