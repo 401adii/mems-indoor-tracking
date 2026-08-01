@@ -15,14 +15,26 @@ static bno085_t bno085 = {0};
 
 static void bno085_receive(uint8_t *buffer)
 {
+    memset((void*)buffer, 0, (size_t)BNO085_BUFFER_SIZE);
     i2c_master_receive(dev_handle, buffer, BNO085_HEADER_SIZE, MAX_DELAY);
     uint16_t size = (((uint16_t)buffer[1] << 8) | buffer[0]) & 0x7FFFF;
+    memset((void*)buffer, 0, (size_t)BNO085_BUFFER_SIZE);
     i2c_master_receive(dev_handle, buffer, size, MAX_DELAY);
 }
 
 static void bno085_set_rst(uint8_t level)
 {
     gpio_set_level(BNO085_RESET_PIN, level);
+}
+
+static uint8_t bno085_get_hint()
+{
+    return (uint8_t)gpio_get_level(BNO085_HINT_PIN);
+}
+
+static void bno085_delay(uint32_t delay_ms)
+{
+    vTaskDelay(pdMS_TO_TICKS(delay_ms));
 }
 
 void app_main(void)
@@ -51,6 +63,7 @@ void app_main(void)
         .pull_up_en = GPIO_PULLUP_DISABLE,
         .intr_type = GPIO_INTR_DISABLE,
     };
+
     gpio_config(&gpio_conf);
     gpio_conf.pin_bit_mask = (1ULL << BNO085_HINT_PIN);
     gpio_conf.mode = GPIO_MODE_INPUT;
@@ -59,6 +72,8 @@ void app_main(void)
 
     bno085.receive = bno085_receive;
     bno085.set_rst = bno085_set_rst;
+    bno085.get_hint = bno085_get_hint;
+    bno085.delay = bno085_delay;
     
     if(bno085_init(&bno085) == BNO085_OK)
     {
