@@ -3,11 +3,20 @@
 
 #include <stdint.h>
 
-#define BNO085_I2C_ADDR 0x4A
-#define BNO085_RESET_PIN 23
-#define BNO085_HINT_PIN 19
+#define BNO085_I2C_ADDR     0x4A
+#define BNO085_RESET_PIN    23
+#define BNO085_HINT_PIN     19
+
+#define BNO085_CHANNEL_COMMAND          0 
+#define BNO085_CHANNEL_EXECUTABLE       1
+#define BNO085_CHANNEL_SENSOR_CONTROL   2
+#define BNO085_CHANNEL_INPUT_REPORTS    3
 
 #define BNO085_HEADER_SIZE 4
+#define BNO085_HEADER_LEN_LSB_BYTE  0
+#define BNO085_HEADER_LEN_MSB_BYTE  1
+#define BNO085_HEADER_CHANNEL_BYTE  2
+#define BNNO085_HEADER_SEQNUM_BYTE  3
 
 #define BNO085_BUFFER_SIZE 1024
 
@@ -17,7 +26,7 @@ typedef enum
     BNO085_ERROR
 } bno085_status_t;
 
-typedef void(*bno085_receive_func_t)(uint8_t*);
+typedef void(*bno085_receive_func_t)(uint8_t*, uint16_t);
 typedef void(*bno085_set_rst_func_t)(uint8_t);
 typedef uint8_t(*bno085_get_hint_func_t)(void);
 typedef void(*bno085_delay_func_t)(uint32_t);

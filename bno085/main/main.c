@@ -13,12 +13,8 @@ static i2c_master_dev_handle_t dev_handle;
 
 static bno085_t bno085 = {0};
 
-static void bno085_receive(uint8_t *buffer)
+static void bno085_receive(uint8_t *buffer, uint16_t size)
 {
-    memset((void*)buffer, 0, (size_t)BNO085_BUFFER_SIZE);
-    i2c_master_receive(dev_handle, buffer, BNO085_HEADER_SIZE, MAX_DELAY);
-    uint16_t size = (((uint16_t)buffer[1] << 8) | buffer[0]) & 0x7FFFF;
-    memset((void*)buffer, 0, (size_t)BNO085_BUFFER_SIZE);
     i2c_master_receive(dev_handle, buffer, size, MAX_DELAY);
 }
 
