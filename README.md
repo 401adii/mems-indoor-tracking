@@ -19,7 +19,8 @@ The main tasks of the thesis include:
 * Software, Python, PyQT
 
 ## Directories descriptions
-* `cmd-dispatcher` - Command parser and dispatcher supporting multiple ports.
+* `cmd_dispatcher(./cmd_dispatcher)` - Command parser and dispatcher supporting multiple ports.
+* `bno085(./bno085)` - Driver for BNO085. Provides support for module's Linear Accelerator.
 
 ## License
 This project is proprietary and currently not licensed for open-source use. All rights reserved.
