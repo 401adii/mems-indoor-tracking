@@ -54,6 +54,7 @@ void app_main(void)
         .dev_addr_length = I2C_ADDR_BIT_7,
         .device_address = BNO085_I2C_ADDR,
         .scl_speed_hz = 100000,
+        .scl_wait_us = 1000000,
     };
     i2c_master_bus_add_device(bus_handle, &dev_config, &dev_handle);
 
@@ -90,16 +91,20 @@ void app_main(void)
 
     bno085_enable_report(&bno085, BNO085_FEATURE_ID_LIN_ACCEL, 20000);
     uint8_t buffer[BNO085_BUFFER_SIZE] = {0};
-    gpio_set_level(2, 1);
+    bno085_lin_accel_frame_t frame = {0};
+        
     while(1)
     {
-        if(bno085_read_sensor_data(&bno085, BNO085_FEATURE_ID_LIN_ACCEL, buffer) == BNO085_OK)
+        if (bno085_read_sensor_data(&bno085, BNO085_FEATURE_ID_LIN_ACCEL, buffer) == BNO085_OK)
         {
-            printf("data\n");
-        }
-        else
-        {
-            printf("nodata\n");
+            if (bno085_lin_accel_format_frame(buffer, &frame) == BNO085_OK)
+            {
+                printf("x: %f\ny: %f\nz: %f\n status: %d\n",
+                    frame.x,
+                    frame.y,
+                    frame.z,
+                    frame.status);
+            }
         }
         vTaskDelay(pdMS_TO_TICKS(10));
     }

@@ -45,8 +45,17 @@ typedef struct
     bno085_delay_func_t delay;
 } bno085_t;
 
+typedef struct
+{
+    uint8_t status;
+    float x;
+    float y;
+    float z;
+} bno085_lin_accel_frame_t;
+
 bno085_status_t bno085_init(bno085_t *dev);
 void bno085_enable_report(bno085_t *dev, uint8_t feature_id, uint32_t report_interval_hz);
 bno085_status_t bno085_read_sensor_data(bno085_t *dev, uint8_t feature_id, uint8_t *buffer);
+bno085_status_t bno085_lin_accel_format_frame(uint8_t *buffer, bno085_lin_accel_frame_t *frame);
 
 #endif /*BNO085_H_*/
