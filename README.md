@@ -20,7 +20,8 @@ The main tasks of the thesis include:
 
 ## Directories descriptions
 * [`cmd_dispatcher`](./cmd_dispatcher) - Command parser and dispatcher supporting multiple ports.
-* [`bno085`](./bno085) - Driver for BNO085. Provides support for module's Linear Accelerator.
+* [`bno085`](./bno085) - Driver for BNO085.
+* [`lsm6dsox`](./lsm6dsox) - Driver for LSM6DSOX.
 
 ## License
 This project is proprietary and currently not licensed for open-source use. All rights reserved.
