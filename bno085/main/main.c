@@ -54,7 +54,7 @@ void app_main(void)
         .dev_addr_length = I2C_ADDR_BIT_7,
         .device_address = BNO085_I2C_ADDR,
         .scl_speed_hz = 100000,
-        .scl_wait_us = 1000000,
+        .scl_wait_us = 10000,
     };
     i2c_master_bus_add_device(bus_handle, &dev_config, &dev_handle);
 
