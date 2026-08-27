@@ -17,4 +17,5 @@ idf_component_register(
         esp_wifi 
         lwip 
         nvs_flash
+        esp_driver_i2c
 )
