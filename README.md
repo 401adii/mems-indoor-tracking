@@ -19,9 +19,7 @@ The main tasks of the thesis include:
 * Software, Python, PyQT
 
 ## Directories descriptions
-* [`cmd_dispatcher`](./cmd_dispatcher) - Command parser and dispatcher supporting multiple ports.
-* [`bno085`](./bno085) - Driver for BNO085.
-* [`lsm6dsox`](./lsm6dsox) - Driver for LSM6DSOX.
+* [`firmware`](./firmware) - contains the complete ESP-IDF project source code.
 
 ## License
 This project is proprietary and currently not licensed for open-source use. All rights reserved.
