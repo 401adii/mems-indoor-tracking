@@ -84,7 +84,7 @@ void bno085_enable_report(bno085_t *dev, uint8_t feature_id, uint32_t report_int
 
     dev->transmit(buffer, BNO085_COMMAND_SET_FEATURE_LEN);
 
-    //wait for ack
+    // Wait for ack
     bno085_poll_hint(dev);
     bno085_receive_frame(dev, buffer);
 }   

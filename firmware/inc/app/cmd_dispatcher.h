@@ -47,4 +47,4 @@ uint8_t cmd_buffer_pop_byte(cmd_ring_buffer_t* rb, uint8_t* data);
 void cmd_process_port(cmd_port_context_t* ctx);
 void cmd_dispatch_command(uint8_t* cmd_string);
 
-#endif /*CMD_DISPATCHER_H_*/
+#endif // CMD_DISPATCHER_H_

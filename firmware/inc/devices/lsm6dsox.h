@@ -41,4 +41,4 @@ lsm6dsox_status_t lsm6dsox_init(lsm6dsox_t *dev);
 lsm6dsox_status_t lsm6dsox_enable_accel(lsm6dsox_t *dev, uint8_t config_byte);
 void lsm6dsox_read_accel_data(lsm6dsox_t *dev, lsm6dsox_accel_frame_t *frame);
 
-#endif /* LSM6DSOX_H_ */
+#endif // LSM6DSOX_H_

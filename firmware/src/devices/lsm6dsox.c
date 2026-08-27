@@ -22,9 +22,9 @@ lsm6dsox_status_t lsm6dsox_init(lsm6dsox_t *dev)
 lsm6dsox_status_t lsm6dsox_enable_accel(lsm6dsox_t *dev, uint8_t config_byte)
 {
     uint8_t buffer[] = {LSM6DSOX_REG_CTRL1_XL, config_byte};
-    //send configuration data
+    // Send configuration data
     dev->transmit(buffer, sizeof(buffer));
-    //verify if data got written correctly
+    // Verify if data got written correctly
     dev->transmit(&buffer[0], 1);
     dev->receive(&buffer[0], 1);
 
@@ -45,8 +45,8 @@ void lsm6dsox_read_accel_data(lsm6dsox_t *dev, lsm6dsox_accel_frame_t *frame)
     int16_t x_raw = (buffer[1] << 8) | buffer[0];
     int16_t y_raw = (buffer[3] << 8) | buffer[2];
     int16_t z_raw = (buffer[5] << 8) | buffer[4];
-    //todo: automate the 0.061 value depending on config.
-    //m/s^2
+    // todo: Automate the 0.061 value depending on config.
+    // m/s^2
     frame->x = x_raw * 0.061 / 1000 * LSM6DSOX_G;
     frame->y = y_raw * 0.061 / 1000 * LSM6DSOX_G;
     frame->z = z_raw * 0.061 / 1000 * LSM6DSOX_G;
