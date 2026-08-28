@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define LSM6DSOX_I2C_ADDRESS 0x6A /*0x6B*/
+#define LSM6DSOX_I2C_ADDR 0x6A /*0x6B*/
 
 #define LSM6DSOX_G 9.80665f
 

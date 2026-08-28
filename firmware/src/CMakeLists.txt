@@ -18,4 +18,5 @@ idf_component_register(
         lwip 
         nvs_flash
         esp_driver_i2c
+        esp_driver_gpio
 )
