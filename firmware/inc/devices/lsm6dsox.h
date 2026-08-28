@@ -13,7 +13,7 @@
 
 #define LSM6DSOX_WHOAMI_VAL 0x6C
 
-#define LSM6DSOX_ACCEL_DEFAULT_CONFIG 0x47
+#define LSM6DSOX_ACCEL_DEFAULT_CONFIG 0x40
 
 typedef void (*bno085_transmit_func_t)(uint8_t*, uint16_t);
 typedef void (*bno085_receive_func_t)(uint8_t*, uint16_t);

@@ -8,11 +8,15 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
+#include "esp_timer.h"
 #include "driver/gpio.h"
 
 #include <stdint.h>
+#include <stdlib.h>
 
 #define MAIN_TAG "MAIN"
+
+static TaskHandle_t task_handle = NULL;
 
 static bno085_t g_bno085;
 static lsm6dsox_t g_lsm6dsox;
@@ -20,12 +24,13 @@ static lsm6dsox_t g_lsm6dsox;
 static void handle_udp_data(uint8_t *data, uint16_t length);
 static void lsm6dsox_transmit(uint8_t *data, uint16_t length);
 static void lsm6dsox_receive(uint8_t *data, uint16_t length);
+static void lsm6dsox_accel_task(void* param);
 static void bno085_transmit(uint8_t *data, uint16_t length);
 static void bno085_receive(uint8_t *data, uint16_t length);
 static void bno085_set_rst(uint8_t level);
 static uint8_t bno085_get_hint();
 static void bno085_delay(uint32_t delay_ms);
-
+static void bno085_accel_task(void* param);
 
 void app_main(void)
 {
@@ -84,10 +89,13 @@ void app_main(void)
         ESP_LOGI(MAIN_TAG, "BNO085_OK");
     }
     
-    while(1)
-    {
-        vTaskDelay(pdMS_TO_TICKS(100));
-    }
+    task_handle = xTaskGetCurrentTaskHandle();
+
+    xTaskCreate(lsm6dsox_accel_task, "lsm6dsox_accel", 4096, NULL, 5, NULL);
+
+    ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    xTaskCreate(bno085_accel_task, "bno085_accel", 4096, NULL, 5, NULL);
+    ESP_LOGI(MAIN_TAG, "Exiting");
 }
 
 static void handle_udp_data(uint8_t *data, uint16_t length)
@@ -103,6 +111,25 @@ static void lsm6dsox_transmit(uint8_t *data, uint16_t length)
 static void lsm6dsox_receive(uint8_t *data, uint16_t length)
 {
     i2c_receive(I2C_DEVICE_LSM6DSOX, data, length);
+}
+
+static void lsm6dsox_accel_task(void* param)
+{
+    ESP_LOGI(MAIN_TAG, "LSM6DSOX task started");
+    lsm6dsox_enable_accel(&g_lsm6dsox, LSM6DSOX_ACCEL_DEFAULT_CONFIG);
+    lsm6dsox_accel_frame_t frame = {0};
+
+    int64_t start_time = esp_timer_get_time();
+
+    while((esp_timer_get_time() - start_time) < 5000000)
+    {
+        lsm6dsox_read_accel_data(&g_lsm6dsox, &frame);
+        ESP_LOGI(MAIN_TAG, "x: %.3f y: %.3f z: %.3f", frame.x, frame.y, frame.z);
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+
+    xTaskNotifyGive(task_handle);
+    vTaskDelete(NULL);
 }
 
 static void bno085_transmit(uint8_t *data, uint16_t length)
@@ -128,4 +155,28 @@ static uint8_t bno085_get_hint()
 static void bno085_delay(uint32_t delay_ms)
 {
     vTaskDelay(pdMS_TO_TICKS(delay_ms));
+}
+
+static void bno085_accel_task(void* param)
+{
+    ESP_LOGI(MAIN_TAG, "BNO085 task started");
+    bno085_enable_report(&g_bno085, BNO085_FEATURE_ID_LIN_ACCEL, 20000);
+    uint8_t buffer[BNO085_BUFFER_SIZE]= {0};
+    bno085_lin_accel_frame_t frame = {0};
+
+    int64_t start = esp_timer_get_time();
+
+    while((esp_timer_get_time() - start) < 5000000)
+    {
+        if(bno085_read_sensor_data(&g_bno085, BNO085_FEATURE_ID_LIN_ACCEL, buffer) == BNO085_OK)
+        {
+            if(bno085_lin_accel_format_frame(buffer, &frame) == BNO085_OK)
+            {
+                ESP_LOGI(MAIN_TAG, "x: %.3f y: %.3f z: %.3f", frame.x, frame.y, frame.z);
+            }
+        }
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+    xTaskNotifyGive(task_handle);
+    vTaskDelete(NULL);
 }
