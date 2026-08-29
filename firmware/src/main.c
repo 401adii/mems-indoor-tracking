@@ -3,6 +3,7 @@
 #include "cmd_dispatcher.h"
 #include "i2c.h"
 #include "gpio.h"
+#include "uart.h"
 #include "bno085.h"
 #include "lsm6dsox.h"
 
@@ -48,7 +49,7 @@ static void handle_udp_data(uint8_t *data, uint16_t length);
 static void lsm6dsox_accel_task(void* param);
 static void bno085_accel_task(void* param);
 
-static const cmd_command_t g_command_list[] = {
+static cmd_command_t g_command_list[] = {
     {lsm6dsox_accel_task, "LSM6DSOX_START"},
     {bno085_accel_task, "BNO085_START"}
 };
@@ -56,6 +57,8 @@ static const cmd_command_t g_command_list[] = {
 void app_main(void)
 {
     gpio_init();
+    
+    uart_init(handle_uart_data);
 
     wifi_ap_init((const char *)"mems-indoor-tracker", (const char *)"12345678");
     udp_server_start(3333, handle_udp_data);
@@ -111,7 +114,7 @@ void app_main(void)
     }
 
     size_t commands_num = sizeof(g_command_list) / sizeof(g_command_list[0]);
-    
+
     for(size_t command = 0; command < commands_num; command++)
     {
         cmd_register_command(g_command_list[command].task, g_command_list[command].cmd_name);
