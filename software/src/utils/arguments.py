@@ -30,7 +30,7 @@ def parse_startup_args() -> AppConfig:
     parser.add_argument(
         '--udp-port',
         type=int,
-        default=3333,
+        default=None,
         help="UDP Listening port"
     )
 
