@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-typedef void (*udp_callback_t)(uint8_t *data, uint16_t length);
+typedef void (*udp_callback_t)(uint8_t*, uint16_t);
 
 void udp_server_start(uint16_t port, udp_callback_t on_data_recv);
 

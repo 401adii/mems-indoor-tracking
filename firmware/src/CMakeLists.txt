@@ -14,10 +14,11 @@ idf_component_register(
     
     REQUIRES 
         driver 
-        esp_wifi 
         lwip 
         nvs_flash
+        esp_wifi 
+        esp_timer
         esp_driver_i2c
         esp_driver_gpio
-        esp_timer
+        esp_driver_uart
 )

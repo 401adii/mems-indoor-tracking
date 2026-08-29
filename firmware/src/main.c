@@ -1,5 +1,6 @@
 #include "udp_server.h"
 #include "wifi_ap.h"
+#include "cmd_dispatcher.h"
 #include "i2c.h"
 #include "gpio.h"
 #include "bno085.h"
@@ -16,21 +17,41 @@
 
 #define MAIN_TAG "MAIN"
 
-static TaskHandle_t task_handle = NULL;
-
-static bno085_t g_bno085;
 static lsm6dsox_t g_lsm6dsox;
 
-static void handle_udp_data(uint8_t *data, uint16_t length);
 static void lsm6dsox_transmit(uint8_t *data, uint16_t length);
 static void lsm6dsox_receive(uint8_t *data, uint16_t length);
-static void lsm6dsox_accel_task(void* param);
+
+static bno085_t g_bno085;
+
 static void bno085_transmit(uint8_t *data, uint16_t length);
 static void bno085_receive(uint8_t *data, uint16_t length);
 static void bno085_set_rst(uint8_t level);
 static uint8_t bno085_get_hint();
 static void bno085_delay(uint32_t delay_ms);
+
+static cmd_ring_buffer_t g_uart_rb = {0};
+static cmd_port_context_t g_uart_ctx = {
+    .rx_buffer = &g_uart_rb,
+    .cmd_idx = 0,
+};
+
+static cmd_ring_buffer_t g_udp_rb = {0};
+static cmd_port_context_t g_udp_ctx = {
+    .rx_buffer = &g_udp_rb,
+    .cmd_idx = 0,
+};
+
+static void handle_uart_data(uint8_t *data, uint16_t length);
+static void handle_udp_data(uint8_t *data, uint16_t length);
+
+static void lsm6dsox_accel_task(void* param);
 static void bno085_accel_task(void* param);
+
+static const cmd_command_t g_command_list[] = {
+    {lsm6dsox_accel_task, "LSM6DSOX_START"},
+    {bno085_accel_task, "BNO085_START"}
+};
 
 void app_main(void)
 {
@@ -88,19 +109,31 @@ void app_main(void)
     {
         ESP_LOGI(MAIN_TAG, "BNO085_OK");
     }
+
+    size_t commands_num = sizeof(g_command_list) / sizeof(g_command_list[0]);
     
-    task_handle = xTaskGetCurrentTaskHandle();
+    for(size_t command = 0; command < commands_num; command++)
+    {
+        cmd_register_command(g_command_list[command].task, g_command_list[command].cmd_name);
+    }
+}
 
-    xTaskCreate(lsm6dsox_accel_task, "lsm6dsox_accel", 4096, NULL, 5, NULL);
-
-    ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-    xTaskCreate(bno085_accel_task, "bno085_accel", 4096, NULL, 5, NULL);
-    ESP_LOGI(MAIN_TAG, "Exiting");
+static void handle_uart_data(uint8_t *data, uint16_t length)
+{
+    if(length > 0)
+    {
+        cmd_buffer_push_frame(&g_uart_rb, data, length);
+        cmd_process_port(&g_uart_ctx);
+    }
 }
 
 static void handle_udp_data(uint8_t *data, uint16_t length)
 {
-    printf("%s\n", data);
+    if(length > 0)
+    {
+        cmd_buffer_push_frame(&g_udp_rb, data, length);
+        cmd_process_port(&g_udp_ctx);
+    }
 }
 
 static void lsm6dsox_transmit(uint8_t *data, uint16_t length)
@@ -128,7 +161,6 @@ static void lsm6dsox_accel_task(void* param)
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 
-    xTaskNotifyGive(task_handle);
     vTaskDelete(NULL);
 }
 
@@ -177,6 +209,6 @@ static void bno085_accel_task(void* param)
         }
         vTaskDelay(pdMS_TO_TICKS(10));
     }
-    xTaskNotifyGive(task_handle);
+
     vTaskDelete(NULL);
 }
