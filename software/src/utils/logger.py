@@ -28,7 +28,7 @@ def init_logging(log_to_file) -> logging.Logger:
 
         file_handler = logging.FileHandler(log_file)
         file_handler.setLevel(logging.DEBUG)
-        file_format = logging.Formatter('%(asctime)s | %(levelname)-8s | %(name)s:%(lineno)d | %(message)s')
+        file_format = logging.Formatter('%(levelname)-6s | %(name)s:%(lineno)d | %(message)s')
         file_handler.setFormatter(file_format)
         logger.addHandler(file_handler)
 

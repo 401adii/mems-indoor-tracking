@@ -18,7 +18,7 @@ def main():
     logger = get_logger("Main")
     logger.info("App starting")
 
-    if config.serial_port and config.udp_port:
+    if config.serial_port and config.udp_listen_port:
         logger.error("Only one communication type can be used at a time")
         sys.exit(1)
 
