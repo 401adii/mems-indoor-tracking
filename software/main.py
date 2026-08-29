@@ -5,6 +5,7 @@ from src.utils.arguments import parse_startup_args
 from src.utils.logger import init_logging, get_logger
 
 from src.communication.serial import SerialInterface
+from src.communication.udp import UDPInterface
 
 def on_data_received(data: str):
     logger = get_logger("Main")
@@ -29,10 +30,15 @@ def main():
             baudrate=config.baudrate,
             receive_callback=on_data_received
         )
-    elif config.udp_port:
-        logger.error("UDP not implemented")
+    elif config.udp_listen_port:
+        interface = UDPInterface(
+            local_port=config.udp_listen_port,
+            target_ip=config.udp_target_ip,
+            target_port=config.udp_target_port,
+            receive_callback=on_data_received
+        )
     else:
-        logger.error("No communication interface specified. Use --serial-port od --udp-port.")
+        logger.error("No communication interface specified. Use --serial-port od --udp-listen-port.")
 
     if interface.connect():
         logger.info("Connection established. Starting listener thread.")
