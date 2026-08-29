@@ -46,10 +46,12 @@ static cmd_port_context_t g_udp_ctx = {
 static void handle_uart_data(uint8_t *data, uint16_t length);
 static void handle_udp_data(uint8_t *data, uint16_t length);
 
+static void led_blink_task(void* param);
 static void lsm6dsox_accel_task(void* param);
 static void bno085_accel_task(void* param);
 
 static cmd_command_t g_command_list[] = {
+    {led_blink_task, "BLINK"},
     {lsm6dsox_accel_task, "LSM6DSOX_START"},
     {bno085_accel_task, "BNO085_START"}
 };
@@ -213,5 +215,13 @@ static void bno085_accel_task(void* param)
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 
+    vTaskDelete(NULL);
+}
+
+static void led_blink_task(void* param)
+{
+    gpio_set_level(GPIO_LED_PIN, 1);
+    vTaskDelay(pdMS_TO_TICKS(500));
+    gpio_set_level(GPIO_LED_PIN, 0);
     vTaskDelete(NULL);
 }

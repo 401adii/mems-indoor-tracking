@@ -6,7 +6,8 @@
 void gpio_init()
 {
     gpio_config_t output_config = {
-        .pin_bit_mask = (1ULL << BNO085_RESET_PIN),
+        .pin_bit_mask = (1ULL << BNO085_RESET_PIN) | \
+        (1ULL << GPIO_LED_PIN),
         .mode = GPIO_MODE_OUTPUT,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .pull_up_en = GPIO_PULLUP_DISABLE,
