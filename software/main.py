@@ -7,6 +7,8 @@ from src.utils.logger import init_logging, get_logger
 from src.communication.serial import SerialInterface
 from src.communication.udp import UDPInterface
 
+from src.ui.terminal import Terminal
+
 def on_data_received(data: str):
     logger = get_logger("Main")
     logger.info(f"Incoming data: {data}")
@@ -19,7 +21,7 @@ def main():
     logger.info("App starting")
 
     if config.serial_port and config.udp_listen_port:
-        logger.error("Only one communication type can be used at a time")
+        logger.error("Only one communication type can be used at a time.")
         sys.exit(1)
 
     interface = None
@@ -44,20 +46,18 @@ def main():
         logger.info("Connection established. Starting listener thread.")
         interface.start_listening()
     else:
-        logger.error("Failed to establish connection. Exiting")
+        logger.error("Failed to establish connection. Exiting.")
         sys.exit(1)
 
+    cli = Terminal(interface)
     try:
-        while True:
-            time.sleep(5)
-            interface.send("BLINK")
+        cli.cmdloop()
     except KeyboardInterrupt:
-        logger.info("Keyboard interrupt. Exiting")
+        logger.info("Keyboard interrupt. Exiting.")
     finally:
         if interface:
             interface.disconnect()
-            logger.info("Port disconnected")            
-
+            logger.info("Port disconnected.")
         
 if __name__== "__main__":
     main()

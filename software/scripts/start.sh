@@ -1,0 +1,1 @@
+python3 main.py --serial-port /dev/ttyUSB1
