@@ -11,6 +11,7 @@ idf_component_register(
         "../inc/peripherals"
         "../inc/network"
         "../inc/app"
+        "../inc/hal"
     
     REQUIRES 
         driver 
