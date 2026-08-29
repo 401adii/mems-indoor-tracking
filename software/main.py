@@ -1,7 +1,7 @@
 import sys
 import time
 
-from src.utils.arguments import parse_startup_args
+from src.utils.config import parse_startup_args
 from src.utils.logger import init_logging, get_logger
 
 from src.communication.serial import SerialInterface

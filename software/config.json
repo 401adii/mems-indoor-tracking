@@ -1,0 +1,5 @@
+{
+    "baudrate": 115200,
+    "udp_target_ip": "192.168.4.1",
+    "udp_target_port": 3333
+}
