@@ -14,9 +14,6 @@
 #define APP_INIT_TAG "APP_INIT"
 
 static cmd_command_t g_command_list[] = {
-    {led_blink_task, "BLINK"},
-    {lsm6dsox_accel_task, "LSM6DSOX_START"},
-    {bno085_accel_task, "BNO085_START"},
     {select_task, "SELECT"},
     {start_task, "START"},
     {stop_task, "STOP"}

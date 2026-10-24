@@ -1,1 +1,1 @@
-python3 main.py --serial-port /dev/ttyUSB0
+python3 main.py --serial-port /dev/ttyUSB0 --log

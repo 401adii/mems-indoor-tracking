@@ -23,9 +23,6 @@ class Terminal(cmd.Cmd):
         pass
 
     # REGISTERED DEVICE COMMANDS
-    def do_blink(self, arg):
-        self.interface.send("BLINK")
-
     def do_select(self, arg):
         self.interface.send(f"SELECT {arg}")
 

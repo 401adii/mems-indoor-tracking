@@ -21,6 +21,8 @@ static volatile bool g_task_stop_requested = false;
 
 static cmd_command_t g_tasks_table[] = {
     {led_blink_task, "BLINK"},
+    {lsm6dsox_accel_task, "LSM6DSOX"},
+    {bno085_accel_task, "BNO085"}
 };
 
 void lsm6dsox_accel_task(void* param)
@@ -89,16 +91,23 @@ void select_task(void* param)
     }
 
     uint16_t task_table_len = sizeof(g_tasks_table) / sizeof(g_tasks_table[0]);
+    bool found = false;
     for(uint16_t task = 0; task < task_table_len; task++)
     {
         if(strcmp((const char *)g_tasks_table[task].cmd_name, (const char *)args->argv[0]) == 0)
         {
             g_selected_task = g_tasks_table[task].task;
+            found = true;
             ESP_LOGI(APP_TASKS_TAG, "Successfully selected task %s", args->argv[0]);
             break;
         }
+    }
+
+    if(!found)
+    {
         ESP_LOGW(APP_TASKS_TAG, "Failed to find task %s", args->argv[0]);
     }
+    
     vTaskDelete(NULL);
 }
 
