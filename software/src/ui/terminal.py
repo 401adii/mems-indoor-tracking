@@ -25,6 +25,15 @@ class Terminal(cmd.Cmd):
     # REGISTERED DEVICE COMMANDS
     def do_blink(self, arg):
         self.interface.send("BLINK")
+
+    def do_select(self, arg):
+        self.interface.send(f"SELECT {arg}")
+
+    def do_start(self, arg):
+        self.interface.send("START")
+
+    def do_stop(self, arg):
+        self.interface.send("STOP")
     
     # LOCAL COMMANDS
     def do_exit(self, arg):
@@ -35,3 +44,4 @@ class Terminal(cmd.Cmd):
     def do_quit(self, arg):
         """Alias for exit."""
         return self.do_exit(arg)
+    
