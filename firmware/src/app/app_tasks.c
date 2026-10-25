@@ -18,8 +18,33 @@
 #define APP_TASKS_SELECTED_PRIORITY 5
 
 static TaskFunction_t g_selected_task = NULL;
-static TaskHandle_t g_selected_task_handle = NULL;
+static volatile TaskHandle_t g_selected_task_handle = NULL;
 static volatile bool g_task_stop_requested = false;
+
+static void bno085_cleanup();
+static void lsm6dsox_cleanup();
+
+static void bno085_cleanup()
+{
+    g_selected_task_handle = NULL;
+    if(bno085_init(&g_bno085) != BNO085_OK)
+    {
+        ESP_LOGW(APP_TASKS_TAG, "BNO085 Cleanup initialization failed.");
+        return;
+    }
+    ESP_LOGI(APP_TASKS_TAG, "BNO085 Cleanup success.");
+}
+
+static void lsm6dsox_cleanup()
+{
+    g_selected_task_handle = NULL;
+    if(lsm6dsox_init(&g_lsm6dsox) != LSM6DSOX_OK)
+    {
+        ESP_LOGW(APP_TASKS_TAG, "LSM6DSOX cleanup failed.");
+        return;
+    }
+    ESP_LOGI(APP_TASKS_TAG, "LSM6DSOX cleanup success.");
+}
 
 static cmd_command_t g_tasks_table[] = {
     {led_blink_task, "BLINK"},
@@ -39,7 +64,8 @@ void lsm6dsox_accel_task(void* param)
         ESP_LOGI(APP_TASKS_TAG, "x: %.3f y: %.3f z: %.3f", frame.x, frame.y, frame.z);
         vTaskDelay(pdMS_TO_TICKS(10));
     }
-
+    
+    lsm6dsox_cleanup();
     vTaskDelete(NULL);
 }
 
@@ -61,7 +87,8 @@ void bno085_accel_task(void* param)
         }
         vTaskDelay(pdMS_TO_TICKS(10));
     }
-
+    
+    bno085_cleanup();
     vTaskDelete(NULL);
 }
 
@@ -130,7 +157,7 @@ void start_task(void *param)
         CMD_TASK_STACK_DEPTH,
         NULL,
         APP_TASKS_SELECTED_PRIORITY,
-        &g_selected_task_handle
+        (TaskHandle_t *)&g_selected_task_handle
         );
 
     if(result != pdPASS)
