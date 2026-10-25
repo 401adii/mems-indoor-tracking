@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QLabel, QFrame
-from src.utils.device_controller import DeviceController
+from src.ui.device_controller import DeviceController
 from src.ui.configuration_panel import ConfigurationPanel
 
 class MainWindow(QMainWindow):

@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QApplication, QDialog
 
 from src.utils.config import parse_startup_args
 from src.utils.logger import init_logging, get_logger
-from src.utils.device_controller import DeviceController
+from src.ui.device_controller import DeviceController
 
 from src.communication.serial import SerialInterface
 from src.communication.udp import UDPInterface
@@ -67,9 +67,6 @@ def main():
         sys.exit(1)
 
     controller = DeviceController(interface)
-    
-    if is_udp:
-        controller.set_output("UDP")
 
     main_window = MainWindow(controller)
     main_window.show()
