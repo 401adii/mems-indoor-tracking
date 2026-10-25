@@ -8,5 +8,6 @@ void select_task(void* param);
 void start_task(void* param);
 void stop_task(void* param);
 void set_output_task(void* param);
+void restart_task(void* param);
 
 #endif // APP_TASKS_H_

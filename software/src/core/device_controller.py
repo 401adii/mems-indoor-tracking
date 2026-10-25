@@ -30,3 +30,7 @@ class DeviceController:
     def set_output(self, mode: str):
         logger.info(f"Setting output mode: {mode}")
         self.interface.send(f"OUT {mode}")
+
+    def restart(self):
+        logger.info(f"Sending restart request.")
+        self.interface.send(f"RESTART")

@@ -18,7 +18,8 @@ static cmd_command_t g_command_list[] = {
     {select_task, "SELECT"},
     {start_task, "START"},
     {stop_task, "STOP"},
-    {set_output_task, "OUT"}
+    {set_output_task, "OUT"},
+    {restart_task, "RESTART"}
 };
 
 void app_init(void)

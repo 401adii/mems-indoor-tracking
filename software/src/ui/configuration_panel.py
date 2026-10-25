@@ -32,8 +32,8 @@ class ConfigurationPanel(QWidget):
         method_layout.addWidget(self.combo_methods)
         method_group.setLayout(method_layout)
         layout.addWidget(method_group)
-        
-        # Control Buttons
+
+        # Start/Stop Buttons
         btn_layout = QHBoxLayout()
         self.btn_start = QPushButton("Start")
         self.btn_stop = QPushButton("Stop")
@@ -44,6 +44,10 @@ class ConfigurationPanel(QWidget):
         
         layout.addStretch() 
         
+        # Restart Button
+        self.btn_restart = QPushButton("Restart MCU")
+        layout.addWidget(self.btn_restart)
+        
         # Signals / Slots Connections
         self.radio_lsm.toggled.connect(self._update_methods)
         
@@ -51,6 +55,7 @@ class ConfigurationPanel(QWidget):
         
         self.btn_start.clicked.connect(self.controller.start)
         self.btn_stop.clicked.connect(self.controller.stop)
+        self.btn_restart.clicked.connect(self.controller.restart)
         
         self._update_methods()
 

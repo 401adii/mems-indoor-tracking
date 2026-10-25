@@ -8,6 +8,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
+#include "esp_system.h"
 #include "esp_timer.h"
 #include "driver/gpio.h"
 
@@ -20,6 +21,12 @@
 static TaskFunction_t g_selected_task = NULL;
 static volatile TaskHandle_t g_selected_task_handle = NULL;
 static volatile bool g_task_stop_requested = false;
+
+static cmd_command_t g_tasks_table[] = {
+    {led_blink_task, "BLINK"},
+    {lsm6dsox_accel_task, "LSM6DSOX"},
+    {bno085_accel_task, "BNO085"}
+};
 
 static void bno085_cleanup();
 static void lsm6dsox_cleanup();
@@ -45,12 +52,6 @@ static void lsm6dsox_cleanup()
     }
     ESP_LOGI(APP_TASKS_TAG, "LSM6DSOX cleanup success.");
 }
-
-static cmd_command_t g_tasks_table[] = {
-    {led_blink_task, "BLINK"},
-    {lsm6dsox_accel_task, "LSM6DSOX"},
-    {bno085_accel_task, "BNO085"}
-};
 
 void lsm6dsox_accel_task(void* param)
 {
@@ -227,6 +228,15 @@ void set_output_task(void *param)
     {
         ESP_LOGW(APP_TASKS_TAG, "Wrong output specified. Try UDP or SERIAL.");
     }
+
+    vTaskDelete(NULL);
+}
+
+void restart_task(void *param)
+{
+    ESP_LOGI(APP_TASKS_TAG, "Restarting System...");
+
+    esp_restart();
 
     vTaskDelete(NULL);
 }
