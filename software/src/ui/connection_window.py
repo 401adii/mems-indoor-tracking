@@ -1,7 +1,7 @@
 import serial.tools.list_ports
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QRadioButton, 
                                QGroupBox, QFormLayout, QComboBox, QLineEdit, 
-                               QPushButton, QStackedWidget, QMessageBox)
+                               QPushButton, QStackedWidget, QMessageBox, QCheckBox)
 from PySide6.QtCore import Qt
 
 class ConnectionWindow(QDialog):
@@ -67,6 +67,11 @@ class ConnectionWindow(QDialog):
         self.radio_serial.toggled.connect(lambda: self.stack.setCurrentIndex(0))
         self.radio_udp.toggled.connect(lambda: self.stack.setCurrentIndex(1))
 
+        # Log Enable Checkbox
+        self.checkbox_logs = QCheckBox("Logs")
+        self.checkbox_logs.setChecked(False)
+        main_layout.addWidget(self.checkbox_logs)
+
         # Connect / Cancel Buttons
         btn_layout = QHBoxLayout()
         self.btn_connect = QPushButton("Connect")
@@ -100,7 +105,8 @@ class ConnectionWindow(QDialog):
                     "baudrate": int(self.combo_baudrate.currentText()),
                     "udp_listen_port": None,
                     "udp_target_ip": None,
-                    "udp_target_port": None
+                    "udp_target_port": None,
+                    "log_to_file": self.checkbox_logs.isChecked()
                 }
             else:
                 self._user_config = {
@@ -108,7 +114,8 @@ class ConnectionWindow(QDialog):
                     "baudrate": None,
                     "udp_listen_port": int(self.input_listen_port.text()),
                     "udp_target_ip": self.input_target_ip.text(),
-                    "udp_target_port": int(self.input_target_port.text())
+                    "udp_target_port": int(self.input_target_port.text()),
+                    "log_to_file": self.checkbox_logs.isChecked()
                 }
             self.accept()
         except ValueError as e:
