@@ -1,6 +1,8 @@
 #include "app_tasks.h"
 #include "sensor_bus.h" 
 #include "cmd_dispatcher.h"
+#include "log_router.h"
+#include "udp_server.h"
 #include "gpio.h"
 
 #include "freertos/FreeRTOS.h"
@@ -168,5 +170,36 @@ void stop_task(void *param)
     }
 
     g_task_stop_requested = false;
+    vTaskDelete(NULL);
+}
+
+void set_output_task(void *param)
+{
+    cmd_args_t *args = (cmd_args_t *)param;
+
+    if(args->argc != 1)
+    {
+        ESP_LOGW(APP_TASKS_TAG, "Expected 1 argument, got %d. Aborting.", args->argc);
+        vTaskDelete(NULL);
+        return;
+    }
+
+    if(strcmp(args->argv[0], "SERIAL") == 0)
+    {
+        ESP_LOGI(APP_TASKS_TAG, "Switching to Serial");
+        log_router_set_target(LOG_OUTPUT_SERIAL);
+        ESP_LOGI(APP_TASKS_TAG, "Succesfully changed log output to SERIAL.");
+    }
+    else if(strcmp(args->argv[0], "UDP") == 0)
+    {
+        ESP_LOGI(APP_TASKS_TAG, "Switching to UDP");
+        log_router_set_target(LOG_OUTPUT_UDP);
+        ESP_LOGI(APP_TASKS_TAG, "Succesfully changed log output to UDP. Listen for data on port %d", UDP_DEFAULT_TRANSMIT_PORT);
+    }
+    else
+    {
+        ESP_LOGW(APP_TASKS_TAG, "Wrong output specified. Try UDP or SERIAL.");
+    }
+
     vTaskDelete(NULL);
 }

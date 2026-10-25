@@ -1,4 +1,5 @@
 #include "udp_server.h"
+#include "log_router.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "lwip/sockets.h"
@@ -35,6 +36,11 @@ static void udp_server_task(void *param)
             if(len > 0)
             {
                 rx_buffer[len] = 0;
+                char sender_ip[INET_ADDRSTRLEN];
+                struct sockaddr_in *client_sin = (struct sockaddr_in *)&source_addr;
+                inet_ntop(AF_INET, &client_sin->sin_addr, sender_ip, sizeof(sender_ip));
+
+                log_router_set_udp_destination(sender_ip, UDP_DEFAULT_TRANSMIT_PORT);
                 if(g_user_callback != NULL)
                 {
                     g_user_callback((uint8_t*)rx_buffer, len);

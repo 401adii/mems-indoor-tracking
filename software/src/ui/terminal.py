@@ -31,6 +31,9 @@ class Terminal(cmd.Cmd):
 
     def do_stop(self, arg):
         self.interface.send("STOP")
+
+    def do_out(self, arg):
+        self.interface.send(f"OUT {arg}")
     
     # LOCAL COMMANDS
     def do_exit(self, arg):

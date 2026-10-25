@@ -8,6 +8,7 @@
 #include "i2c.h"
 #include "wifi_ap.h"
 #include "udp_server.h"
+#include "log_router.h"
 #include "esp_log.h"
 #include <stddef.h>
 
@@ -16,7 +17,8 @@
 static cmd_command_t g_command_list[] = {
     {select_task, "SELECT"},
     {start_task, "START"},
-    {stop_task, "STOP"}
+    {stop_task, "STOP"},
+    {set_output_task, "OUT"}
 };
 
 void app_init(void)
@@ -27,6 +29,7 @@ void app_init(void)
 
     wifi_ap_init("mems-indoor-tracker", "12345678");
     udp_server_start(3333, handle_udp_data);
+    log_router_init();
     
     i2c_status_t i2c_status = I2C_OK;
     i2c_status |= i2c_init_bus();
