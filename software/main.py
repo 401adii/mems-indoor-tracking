@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QApplication, QDialog
 
 from src.utils.config import parse_startup_args
 from src.utils.logger import init_logging, get_logger
+from src.utils.device_controller import DeviceController
 
 from src.communication.serial import SerialInterface
 from src.communication.udp import UDPInterface
@@ -41,6 +42,8 @@ def main():
         sys.exit(1)
 
     interface = None
+    is_udp = False
+    
     if config.serial_port:
         interface = SerialInterface(
             port=config.serial_port,
@@ -54,6 +57,7 @@ def main():
             target_port=config.udp_target_port,
             receive_callback=on_data_received
         )
+        is_udp = True
 
     if interface.connect():
         logger.info("Connection established. Starting listener thread.")
@@ -62,7 +66,12 @@ def main():
         logger.error("Failed to establish connection. Exiting.")
         sys.exit(1)
 
-    main_window = MainWindow(interface)
+    controller = DeviceController(interface)
+    
+    if is_udp:
+        controller.set_output("UDP")
+
+    main_window = MainWindow(controller)
     main_window.show()
 
     exit_code = app.exec()

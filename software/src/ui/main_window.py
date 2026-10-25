@@ -1,23 +1,35 @@
-from PySide6.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QWidget
-from src.communication.base_interface import BaseCommunication
+from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QLabel, QFrame
+from src.utils.device_controller import DeviceController
+from src.ui.configuration_panel import ConfigurationPanel
 
 class MainWindow(QMainWindow):
-    def __init__(self, interface: BaseCommunication):
+    def __init__(self, controller: DeviceController):
         super().__init__()
-        self.interface = interface
+        self.controller = controller
         self.setWindowTitle("MEMS Indoor Tracker")
-        self.resize(800, 600)
+        self.resize(1000, 600)
 
-        # Placeholder UI
+        # Central Widget & Main Layout
         central_widget = QWidget()
-        layout = QVBoxLayout(central_widget)
-        
-        info_label = QLabel("Connection Established. Waiting for GUI implementation...")
-        layout.addWidget(info_label)
-        
+        main_layout = QHBoxLayout(central_widget)
+
+        # 1. Main View Plane (Placeholder)
+        self.view_plane = QFrame()
+        self.view_plane.setFrameShape(QFrame.StyledPanel)
+        view_layout = QHBoxLayout(self.view_plane)
+        placeholder_label = QLabel("Visualization Plane")
+        view_layout.addWidget(placeholder_label)
+
+        # Configuration Plane
+        self.config_panel = ConfigurationPanel(self.controller)
+
+        # Add to layout and set proportions
+        main_layout.addWidget(self.view_plane, stretch=3)
+        main_layout.addWidget(self.config_panel, stretch=1)
+
         self.setCentralWidget(central_widget)
 
     def closeEvent(self, event):
-        if self.interface:
-            self.interface.disconnect()
+        if self.controller and self.controller.interface:
+            self.controller.interface.disconnect()
         event.accept()
