@@ -1,1 +1,1 @@
-python3 main.py --udp-listen-port 4554
+python3 main.py --udp-listen-port 4554 --log
