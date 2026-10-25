@@ -36,6 +36,35 @@ The software is a multithreaded Python application designed to interface with th
 * Communication [`communication`](./software/src/communication/) - Base communication interface and implementation for Serial (UART) and UDP protocols.
 * Utilites [`utils`](./software/src/utils/) - Application runtime helpers (Argument handling and parsing, JSON configuration, logging).
 
+## User Manual
+### Firmware & Hardware Setup
+To flash the firmware onto the ESP32 MCU, install the [ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/index.html#installation) framework. The device firmware is built and validated using ESP-IDF v6.1.
+
+todo: add hardware pinout.
+
+### Software Setup
+
+To setup software enter [`software/`] directory. Virtual environment and dependencies installation can be done using setup shell script:
+```bash
+./scripts/setup.sh
+```
+
+### Software Launch
+The application resolves connection settings using a strict hierarchy: command-line arguments, a local configuration file, or an interactive GUI prompt. 
+* Command Line-Overrides: Launch the application with arguments to instantly connect and bypass the setup screen.
+    * *Serial*: `python3 main.py --serial-port /dev/ttyUSB0 --baudrate 115200`
+    * *UDP*: `python3 main.py --udp-listen-port 4554` 
+* Config File: Place a configuration file in the root directory to define default fallback parameters for headless or repeated launches.
+* Connection Panel: If you run `python3 main.py` without CLI arguments and no valid configuration file is found, the GUI Connection Window appears. This panel allows you to dynamically scan for active USB COM ports, configure UDP target IPs and listen ports, and toggle background data logging before establishing a connection.
+
+### Application Workflow
+* Use the radio buttons in the Configuration Panel to designate the active hardware module (LSM6DSOX or BNO085).
+* Click the Method dropdown to select a specific tracking algorithm.
+Execution Controls:
+    * **Start**: Commands the ESP32 to lock in the current output mode ( and begin continuously transmitting computed telemetry.
+    * **Stop**: Halts the data stream.
+    * **Restart MCU**: Located at the bottom of the panel, this button sends a forced reboot request to the ESP32 hardware.
+
 ## Technologies Used
 * Espressif ESP32-D0WDQ6 (from ESP32WROOM32 devkit)
 * STMicroeletrconics LSM6DSOX
