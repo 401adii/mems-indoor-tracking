@@ -3,7 +3,8 @@ from PySide6.QtWidgets import QApplication, QDialog
 
 from src.utils.config import parse_startup_args
 from src.utils.logger import init_logging, get_logger
-from src.ui.device_controller import DeviceController
+from src.core.device_controller import DeviceController
+from src.core.data_bridge import DataBridge
 
 from src.communication.serial import SerialInterface
 from src.communication.udp import UDPInterface
@@ -41,22 +42,22 @@ def main():
     logger = get_logger("Main")
     logger.info("App starting")
 
+    data_bridge = DataBridge()
     interface = None
     
     if config.serial_port:
         interface = SerialInterface(
             port=config.serial_port,
             baudrate=config.baudrate,
-            receive_callback=on_data_received
+            receive_callback=data_bridge.on_data_received
         )
     elif config.udp_listen_port:
         interface = UDPInterface(
             local_port=config.udp_listen_port,
             target_ip=config.udp_target_ip,
             target_port=config.udp_target_port,
-            receive_callback=on_data_received
+            receive_callback=data_bridge.on_data_received
         )
-        is_udp = True
 
     if interface.connect():
         logger.info("Connection established. Starting listener thread.")
@@ -68,6 +69,9 @@ def main():
     controller = DeviceController(interface)
 
     main_window = MainWindow(controller)
+    
+    data_bridge.sensor_update.connect(main_window.display_panel.update_display)
+
     main_window.show()
 
     exit_code = app.exec()

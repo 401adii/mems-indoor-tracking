@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QLabel, QFrame
-from src.ui.device_controller import DeviceController
+from src.core.device_controller import DeviceController
 from src.ui.configuration_panel import ConfigurationPanel
+from src.ui.display_panel import DisplayPanel
 
 class MainWindow(QMainWindow):
     def __init__(self, controller: DeviceController):
@@ -13,18 +14,14 @@ class MainWindow(QMainWindow):
         central_widget = QWidget()
         main_layout = QHBoxLayout(central_widget)
 
-        # 1. Main View Plane (Placeholder)
-        self.view_plane = QFrame()
-        self.view_plane.setFrameShape(QFrame.StyledPanel)
-        view_layout = QHBoxLayout(self.view_plane)
-        placeholder_label = QLabel("Visualization Plane")
-        view_layout.addWidget(placeholder_label)
-
+        # Main View Plane
+        self.display_panel = DisplayPanel()
+        
         # Configuration Plane
         self.config_panel = ConfigurationPanel(self.controller)
 
         # Add to layout and set proportions
-        main_layout.addWidget(self.view_plane, stretch=3)
+        main_layout.addWidget(self.display_panel, stretch=3)
         main_layout.addWidget(self.config_panel, stretch=1)
 
         self.setCentralWidget(central_widget)
