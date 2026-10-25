@@ -16,8 +16,10 @@ class DeviceController:
     def start(self):
         if self.is_udp:
             self.set_output("UDP")
-            time.sleep(0.05)
+        else:
+            self.set_output("SERIAL")
 
+        time.sleep(0.05)
         logger.info("Sending START command")
         self.interface.send("START")
 
