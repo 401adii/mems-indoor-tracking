@@ -26,6 +26,8 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(central_widget)
 
+        self.config_panel.btn_stop.clicked.connect(self.display_panel.reset_plot)
+
     def closeEvent(self, event):
         if self.controller and self.controller.interface:
             self.controller.interface.disconnect()
