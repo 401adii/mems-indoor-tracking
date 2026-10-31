@@ -61,10 +61,10 @@ The application resolves connection settings using a strict hierarchy: command-l
 ### Application Workflow
 * Use the radio buttons in the Configuration Panel to designate the active hardware module (LSM6DSOX or BNO085).
 * Click the Method dropdown to select a specific tracking algorithm.
-#### Execution Controls:
-    * **Start**: Commands the ESP32 to lock in the current output mode and begin continuously transmitting computed telemetry.
-    * **Stop**: Halts the data stream.
-    * **Restart MCU**: Located at the bottom of the panel, this button sends a forced reboot request to the ESP32 hardware.
+#### Execution Controls
+* **Start**: Commands the ESP32 to lock in the current output mode and begin continuously transmitting computed telemetry.
+* **Stop**: Halts the data stream.
+* **Restart MCU**: Located at the bottom of the panel, this button sends a forced reboot request to the ESP32 hardware.
 
 ## Technologies Used
 * Espressif ESP32-D0WDQ6 (from ESP32-WROOM-32 devkit)
