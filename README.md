@@ -11,7 +11,7 @@ The main tasks of the thesis include:
 * Full system integration and testing.
 
 ## Concept
-The primary objective of this project is to implement and evaluate various dead reckoning and displacement estimation methods using micromechanical sensors. The system is designed to acquire inertial data in real time, stream it wirelessly or via serial link to a dedicated host application for live visualization and telemetry logging, and facilitate comparative experimental studies to determine the accuracy, drift characteristics, and practical limitations of each positioning approach.
+The primary objective of this project is to implement and evaluate various dead reckoning and displacement estimation methods using micromechanical sensors. The system acquires inertial sensor data in real time. A dedicated host application then receives the wireless or serial stream to handle live visualization and telemetry logging. Comparative experimental studies will be conducted to determine the accuracy, drift characteristics, and practical limitations of each positioning approach.
 
 ### Firmware
 The firmware is build on ESP-IDF framework in C, leveraging FreeRTOS for task management. The system employs modular architecture to separate low-level control from data processing required for passive navigation.
@@ -32,7 +32,8 @@ The firmware is build on ESP-IDF framework in C, leveraging FreeRTOS for task ma
 The software is a multithreaded Python application designed to interface with the tracking hardware. It provides a control terminal, data logging, and an extensible foundation for a graphical visualization layer.
 
 #### System Layers:
-* User Interface [`ui`](./software/src/ui/) - Control Interface featuring CLI build on `cmd.Cmd` for commands and streaming telemetry. In the future will contain integration with dedicated graphical layer.
+* Core [`core`](./software/src/core/) - Bridges translating telecommands and telemetry.
+* User Interface [`ui`](./software/src/ui/) - Graphical Interface build using PySide6 library.
 * Communication [`communication`](./software/src/communication/) - Base communication interface and implementation for Serial (UART) and UDP protocols.
 * Utilites [`utils`](./software/src/utils/) - Application runtime helpers (Argument handling and parsing, JSON configuration, logging).
 
