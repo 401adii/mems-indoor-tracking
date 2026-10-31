@@ -8,6 +8,7 @@ from src.core.data_bridge import DataBridge
 
 from src.communication.serial import SerialInterface
 from src.communication.udp import UDPInterface
+from src.communication.mock import MockInterface
 
 from src.ui.connection_window import ConnectionWindow
 from src.ui.main_window import MainWindow
@@ -21,7 +22,7 @@ def main():
 
     app = QApplication(sys.argv)
 
-    if not config.serial_port and not config.udp_listen_port:
+    if not config.serial_port and not config.udp_listen_port and not config.use_mock:
         conn_window = ConnectionWindow()
         
         if conn_window.exec() == QDialog.Accepted:
@@ -32,6 +33,7 @@ def main():
             config.udp_target_ip = updates["udp_target_ip"]
             config.udp_target_port = updates["udp_target_port"]
             config.log_to_file = updates["log_to_file"] 
+            config.use_mock = updates.get("use_mock", False)
         else:
             sys.exit(0)
     elif config.serial_port and config.udp_listen_port:
@@ -44,8 +46,10 @@ def main():
 
     data_bridge = DataBridge()
     interface = None
-    
-    if config.serial_port:
+
+    if config.use_mock:
+        interface = MockInterface(receive_callback=data_bridge.on_data_received)
+    elif config.serial_port:
         interface = SerialInterface(
             port=config.serial_port,
             baudrate=config.baudrate,

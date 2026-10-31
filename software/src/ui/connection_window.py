@@ -1,7 +1,7 @@
 import serial.tools.list_ports
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QRadioButton, 
                                QGroupBox, QFormLayout, QComboBox, QLineEdit, 
-                               QPushButton, QStackedWidget, QMessageBox, QCheckBox)
+                               QPushButton, QStackedWidget, QMessageBox, QCheckBox, QLabel)
 from PySide6.QtCore import Qt
 
 class ConnectionWindow(QDialog):
@@ -22,9 +22,11 @@ class ConnectionWindow(QDialog):
         mode_layout = QHBoxLayout()
         self.radio_serial = QRadioButton("Serial (USB)")
         self.radio_udp = QRadioButton("UDP (Wi-Fi)")
+        self.radio_mock = QRadioButton("Mock (Simulation)")
         self.radio_serial.setChecked(True)
         mode_layout.addWidget(self.radio_serial)
         mode_layout.addWidget(self.radio_udp)
+        mode_layout.addWidget(self.radio_mock)
         mode_group.setLayout(mode_layout)
         main_layout.addWidget(mode_group)
 
@@ -54,6 +56,15 @@ class ConnectionWindow(QDialog):
         self.input_target_ip = QLineEdit("192.168.4.1")
         self.input_target_port = QLineEdit("3333")
         self.input_listen_port = QLineEdit("4554")
+
+        # Index 2: Empty placeholder widget for Mock
+        self.mock_widget = QGroupBox("Simulation Mode")
+        mock_layout = QVBoxLayout()
+        mock_layout.addWidget(QLabel("Generates synthetic trajectory data internally."))
+        self.mock_widget.setLayout(mock_layout)
+        self.stack.addWidget(self.mock_widget)
+
+        main_layout.addWidget(self.stack)
         
         udp_layout.addRow("Target IP:", self.input_target_ip)
         udp_layout.addRow("Target Port (TX):", self.input_target_port)
@@ -66,6 +77,7 @@ class ConnectionWindow(QDialog):
         # Connect Radio Buttons to Stack
         self.radio_serial.toggled.connect(lambda: self.stack.setCurrentIndex(0))
         self.radio_udp.toggled.connect(lambda: self.stack.setCurrentIndex(1))
+        self.radio_mock.toggled.connect(lambda: self.stack.setCurrentIndex(2))
 
         # Log Enable Checkbox
         self.checkbox_logs = QCheckBox("Logs")
@@ -108,13 +120,23 @@ class ConnectionWindow(QDialog):
                     "udp_target_port": None,
                     "log_to_file": self.checkbox_logs.isChecked()
                 }
-            else:
+            elif self.radio_udp.isChecked():
                 self._user_config = {
                     "serial_port": None,
                     "baudrate": None,
                     "udp_listen_port": int(self.input_listen_port.text()),
                     "udp_target_ip": self.input_target_ip.text(),
                     "udp_target_port": int(self.input_target_port.text()),
+                    "log_to_file": self.checkbox_logs.isChecked()
+                }
+            else:
+                self._user_config = {
+                    "serial_port": None,
+                    "baudrate": None,
+                    "udp_listen_port": None,
+                    "udp_target_ip": None,
+                    "udp_target_port": None,
+                    "use_mock": True,
                     "log_to_file": self.checkbox_logs.isChecked()
                 }
             self.accept()

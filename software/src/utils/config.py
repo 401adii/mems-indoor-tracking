@@ -15,6 +15,7 @@ class AppConfig:
     udp_listen_port: Optional[int]
     udp_target_ip: str
     udp_target_port: int
+    use_mock: bool = False
 
 def load_default_from_file(filepath: str = "config.json") -> dict:
     path = Path(filepath)
@@ -43,6 +44,8 @@ def parse_startup_args() -> AppConfig:
     parser.add_argument('--udp-target-ip', type=str, default=None, help="IP address of the target device")
     parser.add_argument('--udp-target-port', type=int, default=None, help="Port of the target device")
 
+    parser.add_argument('--mock', action='store_true', help="Run application with internal hw mock")
+
     file_defaults = load_default_from_file()
 
     if file_defaults:
@@ -56,5 +59,6 @@ def parse_startup_args() -> AppConfig:
         baudrate=args.baudrate,
         udp_listen_port=args.udp_listen_port,
         udp_target_ip=args.udp_target_ip,
-        udp_target_port=args.udp_target_port
+        udp_target_port=args.udp_target_port,
+        use_mock=args.mock
     )
